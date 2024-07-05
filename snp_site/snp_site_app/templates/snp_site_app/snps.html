@@ -3,150 +3,184 @@
 {% block page2 %}nav-link active{% endblock %}
 {% block content %}
 <!-- main -->
-<div class="container mt-5">
-<div class="card text-dark bg-white mt-3 mb-3 mx-auto">
-  <div class="card-header text-white bg-primary">Select species</div>
-  
-  <div class="card-body">
-    <div class="row">
-        <div class="row row-cols-6 row-cols-md-6 g-6">
-            <div class="card">
-                <img class="card-img-top" src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            <div class="card">
-                <img class="card-img-top" alt="..." src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            <div class="card">
-                <img class="card-img-top" src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            <div class="card">
-                <img class="card-img-top" src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            <div class="card">
-                <img class="card-img-top" src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            <div class="card">
-                <img class="card-img-top" src="http://placehold.it/150x150">
-                    <div class="card-body">
-                        <p class="card-text"><small class="text-muted">Species name</small></p>
-                    </div>
-            </div>
-            
-        </div>
-        
-    </div>
-    </div>
-  </div>
+<style>
+#hovercard
+{
+  position: relative;
+  transition: 0.4s;
+  top: 0px;
+}
+#hovercard:hover {
+ position: relative;
+ top: -15px;
+ border-color: cadetblue;
 
-  <div class="card text-dark bg-white mt-5 mb-3 mx-auto">
-      <div class="card-header text-white bg-primary">SNP search</div>
-        <div class="col-lg-5 col-md-5 col-xs-5 thumb">
-          <div class="mb-3 row px-3 mt-3">
-              <!-- Region form-->
-              <label for="staticRegion" class="col-sm-2 col-form-label">Region</label>
-              <div class="col-sm-10">
-                  <div class="input-group mb-3">
-                      <input type="text" class="form-control" aria-label="region number">
-                      <button class="input-group-text"><i class="bi bi-zoom-in"></i></button>
-                      <button class="input-group-text"><i class="bi bi-zoom-out"></i></button>
+}
+
+.selected-card {
+        border-color: blue; 
+        background-color: #9cbbf0
+    }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('#card-container .card');
+      const selectedSpeciesInput = document.getElementById('selected_species_id');
+  
+      cards.forEach(card => {
+          card.addEventListener('click', function() {
+              // Remove 'selected-card' class from all cards
+              cards.forEach(c => c.classList.remove('selected-card'));
+              
+              // Add 'selected-card' class to the clicked card
+              card.classList.add('selected-card');
+              
+              // Get species ID from the clicked card
+              const speciesId = card.getAttribute('data-species-id');
+              
+              // Set the selected species ID in the hidden input field
+              selectedSpeciesInput.value = speciesId;
+          });
+      });
+  
+      // Retain the selection on page load
+      const retainedSpeciesId = selectedSpeciesInput.value;
+      if (retainedSpeciesId) {
+          const selectedCard = document.querySelector(`#card-container .card[data-species-id="${retainedSpeciesId}"]`);
+          if (selectedCard) {
+              selectedCard.classList.add('selected-card');
+          }
+      }
+  });
+  </script>
+
+<form method="POST" action="{% url 'snps:get_snps' %}" id="speciesForm">
+  {% csrf_token %}
+  <input type="hidden" id="selected_species_id" name="selected_species_id" value="{{ selected_species_id|default:'' }}">
+
+
+
+  <div class="container mt-5">
+      <div class="card text-dark bg-white mt-3 mb-3 mx-auto">
+          <div class="card-header text-white bg-primary">Select species</div>
+          <div class="card-body">
+              <div class="row">
+                  <div class="row row-cols-6 row-cols-md-6 g-6" id="card-container">
+                      {% for species in species_list|slice:":6" %}
+                      <div class="card" id="hovercard" data-species-id="{{ species.id }}">
+                          <div class="d-flex justify-content-center">
+                              <img class="card-img-top img-thumbnail" src="{{ species.image_file.url }}" style="width: 150px; height: 150px; object-fit: contain;">
+                          </div>
+                          <div class="card-body text-center">
+                              <p class="card-text"><small class="text-muted">{{ species.name }}</small></p>
+                          </div>
+                      </div>
+                      {% endfor %}
                   </div>
               </div>
-          
-              <!-- MAF form-->
-              <label for="staticMAF" class="col-sm-2 col-form-label">MAF</label>
-              <div class="col-sm-10">
-                  <div class="input-group mb-3">
-                      <button class="input-group-text">Min. Value</button>
-                      <input type="text" class="form-control" aria-label="min value">
-                      <button class="input-group-text">Max. Value</button>
-                      <input type="text" class="form-control" aria-label="max value">
+          </div>
+      </div>
+      <div class="container mt-5">
+      <div class="card text-dark bg-white mt-5 mb-3 mx-auto">
+          <div class="card-header text-white bg-primary">SNP search</div>
+          <div class="col-lg-5 col-md-5 col-xs-5 thumb">
+              <div class="mb-3 row px-3 mt-3">
+                  <!-- Region form-->
+                  <label for="staticRegion" class="col-sm-2 col-form-label">Region</label>
+                  <div class="col-sm-10">
+                      <div class="input-group mb-3">
+                          <input type="text" class="form-control" name = "region" aria-label="region number" value="{{ request.POST.region}}">
+                          <button class="input-group-text" disabled><i class="bi bi-zoom-in"></i></button>
+                          <button class="input-group-text" disabled><i class="bi bi-zoom-out"></i></button>
+                      </div>
+                  </div>
+
+                  <!-- MAF form-->
+                  <label for="staticMAF" class="col-sm-2 col-form-label">MAF</label>
+                  <div class="col-sm-10">
+                      <div class="input-group mb-3">
+                          <button class="input-group-text" disabled>Min. Value</button>
+                          <input type="text" class="form-control" name="maf_min" aria-label="min value" value="{{ request.POST.maf_min }}">
+                          <button class="input-group-text" disabled>Max. Value</button>
+                          <input type="text" class="form-control" name="maf_max" aria-label="max value" value="{{ request.POST.maf_max }}">
+                      </div>
                   </div>
                   
+
           </div>
-        </div>
-        <button type="submit" class="btn btn-primary mx-3 mb-3">Submit</button>
+          <button type="submit" class="btn btn-primary mx-3 mb-3">Submit</button>
       </div>
   </div>
+</form>
 
-  <nav aria-label="Page navigation example" style="display: flex; justify-content: space-between; align-items: center;">
-    <ul class="pagination mt-3" style="margin-bottom: 0;">
-      <li class="page-item">
-        <a class="page-link" href="#" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-      <li class="page-item"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item">
-        <a class="page-link" href="#" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    </ul>
-  
-    <button type="button" class="btn btn-primary">Download</button>
-  </nav>
+<!-- Pagination links -->
+<nav aria-label="Page navigation example" style="display: flex; justify-content: space-between; align-items: center;">
+  <ul class="pagination mt-3" style="margin-bottom: 0;">
+    {% if snp_list.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page=1&selected_species_id={{ selected_species_id }}&maf_min={{ maf_min }}&maf_max={{ maf_max }}&region={{ region }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% endif %}
+    {% for num in snp_list.paginator.page_range %}
+    <li class="page-item {% if snp_list.number == num %}active{% endif %}">
+      <a class="page-link" href="?page={{ num }}&selected_species_id={{ selected_species_id }}&maf_min={{ maf_min }}&maf_max={{ maf_max }}&region={{ region }}">{{ num }}</a>
+    </li>
+    {% endfor %}
+    {% if snp_list.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ snp_list.paginator.num_pages }}&selected_species_id={{ selected_species_id }}&maf_min={{ maf_min }}&maf_max={{ maf_max }}&region={{ region }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+  <!-- Download CSV Button -->
+  <div class="mb-3">
+    <form method="GET" action="{% url 'snps:download_snps_csv' %}">
+      <button type="submit" class="btn btn-primary">Download</button>
+    </form>
+  </div>
+</nav>
 </div>
-
 <div class="container mt-5 mb-3 mx-auto">
-    <table class="table table-striped table-bordered">
-        <thead>
-          <tr class="text-center">
-            <th scope="col">Chromosome</th>
-            <th scope="col">Position</th>
-            <th scope="col">REF allele</th>
-            <th scope="col">ALT allele</th>
-            <th scope="col">MAF</th>
-            <th scope="col">Annotation</th>
-            <th scope="col">Browser</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>123</td>
-            <td class="text-center">A</td>
-            <td class="text-center">T</td>
-            <td>0.34</td>
-            <td class="text-center"><button type="submit" class="btn btn-primary">Details</button></td>
-            <td class="text-center"><a class="btn btn-primary" href="#" role="button">Show in browser</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>567</td>
-            <td class="text-center">T</td>
-            <td class="text-center">G</td>
-            <td>0.01</td>
-            <td class="text-center"><button type="submit" class="btn btn-primary">Details</button></td>
-            <td class="text-center"><a class="btn btn-primary" href="#" role="button">Show in browser</a></td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>890</td>
-            <td class="text-center">G</td>
-            <td class="text-center">A</td>
-            <td>0.21</td>
-            <td class="text-center"><button type="submit" class="btn btn-primary">Details</button></td>
-            <td class="text-center"><a class="btn btn-primary" href="#" role="button">Show in browser</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr class="text-center">
+        <th scope="col">Chromosome</th>
+        <th scope="col">Position</th>
+        <th scope="col">REF allele</th>
+        <th scope="col">ALT allele</th>
+        <th scope="col">MAF</th>
+        <th scope="col">Annotation</th>
+        <th scope="col">Browser</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for snp in snp_list %}
+      <tr>
+        <td>{{ snp.chromosome.name }}</td>
+        <td>{{ snp.position }}</td>
+        <td class="text-center">{{ snp.ref_allele }}</td>
+        <td class="text-center">{{ snp.alt_allele }}</td>
+        <td>{{ snp.maf }}</td>
+        <td class="text-center">
+          <form method="GET" action="{% url 'snps:snp_annotation_detail' snp.id %}">
+            <button type="submit" class="btn btn-primary">Details</button>
+          </form>
+        </td>
+        <td class="text-center"><a class="btn btn-primary" href="#" role="button">Show in browser</a></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No SNPs found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 <!-- /main -->
 {% endblock %}
