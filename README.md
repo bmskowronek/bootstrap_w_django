@@ -1,7 +1,7 @@
 1) clone the repository / download
 2) if you don't have python/django installed, proceed to django documentation
 3) in a terminal, get inside the first snp_site directory and run the server via ```py manage.py runserver``` on windows or ```python manage.py runserver``` on linux.
-4) site should be available at [127.](http://127.0.0.1:8000/)
+4) site should be available at [127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 notes:
 1) This is an app without real data, but with some artificial mockup data added for demonstration. 
